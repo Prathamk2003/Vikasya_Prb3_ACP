@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - AcademicCollab{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Your Analytics Dashboard</h2>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Project Views</h5>
+                    <p class="display-6">{{ project_views }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Project Likes</h5>
+                    <p class="display-6">{{ project_likes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Questions Asked</h5>
+                    <p class="display-6">{{ num_questions }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Answers Given</h5>
+                    <p class="display-6">{{ num_answers }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Solved Questions</h5>
+                    <p class="display-6">{{ num_solved }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Resource Downloads</h5>
+                    <p class="display-6">{{ resource_downloads }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Industry/Mentor Connections</h5>
+                    <p class="display-6">{{ industrial_people|length }}</p>
+                    <small class="text-muted">{{ industrial_people|join(', ') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white"><b>AI Insights</b></div>
+        <div class="card-body">
+            <ul>
+                {% for insight in ai_insights %}
+                    <li>{{ insight }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">Project Interests (by Subject)</div>
+                <div class="card-body">
+                    <canvas id="subjectChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">Project Interests (by Type)</div>
+                <div class="card-body">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">Project Performance</div>
+                <div class="card-body">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">All Projects</div>
+                <div class="card-body">
+                    <table class="table table-bordered mt-3">
+                        <thead>
+                            <tr>
+                                <th>Project Title</th>
+                                <th>Views</th>
+                                <th>Likes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in project_data %}
+                            <tr>
+                                <td>{{ project.title }}</td>
+                                <td>{{ project.views }}</td>
+                                <td>{{ project.likes }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Project Types (Donut) - Blue
+    var subjectData = {
+        labels: {{ subject_counts.keys()|list|tojson }},
+        datasets: [{
+            label: 'Projects by Subject',
+            data: {{ subject_counts.values()|list|tojson }},
+            backgroundColor: ['#007bff'], // Bootstrap blue
+            borderColor: ['#007bff'],
+            borderWidth: 2
+        }]
+    };
+    var ctx1 = document.getElementById('subjectChart').getContext('2d');
+    new Chart(ctx1, { type: 'doughnut', data: subjectData });
+
+    // Interests (Pie) - Yellow and Teal
+    var typeData = {
+        labels: {{ type_counts.keys()|list|tojson }},
+        datasets: [{
+            label: 'Projects by Type',
+            data: {{ type_counts.values()|list|tojson }},
+            backgroundColor: [
+                '#ffc107', // Bootstrap yellow
+                '#20c997', // Bootstrap teal
+                '#007bff', // blue (fallback)
+                '#6c757d', // gray (fallback)
+            ]
+        }]
+    };
+    var ctx2 = document.getElementById('typeChart').getContext('2d');
+    new Chart(ctx2, { type: 'pie', data: typeData });
+
+    // Q&A Stats (Bar) - Blue and Yellow
+    // Example data, replace with real Q&A stats if available
+    var qaLabels = ['Asked', 'Solved', 'Unsolved', 'Answered'];
+    var qaData = [{{ num_questions }}, {{ num_solved }}, {{ num_questions - num_solved }}, {{ num_answers }}];
+    var qaColors = ['#007bff', '#ffc107', '#ffc107', '#007bff'];
+    var ctxQA = document.getElementById('qaChart');
+    if (ctxQA) {
+        new Chart(ctxQA.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: qaLabels,
+                datasets: [{
+                    label: 'Q&A',
+                    data: qaData,
+                    backgroundColor: qaColors
+                }]
+            }
+        });
+    }
+
+    // Feature Usage (Bar) - Blue
+    var ctxFU = document.getElementById('featureChart');
+    if (ctxFU) {
+        new Chart(ctxFU.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Usage'],
+                datasets: [{
+                    label: 'Usage',
+                    data: [1],
+                    backgroundColor: ['#007bff']
+                }]
+            }
+        });
+    }
+
+    // Performance Chart (Line) - Blue for Views, Yellow for Likes
+    var perfLabels = {{ project_data|map(attribute='title')|list|tojson }};
+    var perfViews = {{ project_data|map(attribute='views')|list|tojson }};
+    var perfLikes = {{ project_data|map(attribute='likes')|list|tojson }};
+    var ctx3 = document.getElementById('performanceChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'line',
+        data: {
+            labels: perfLabels,
+            datasets: [
+                {
+                    label: 'Views',
+                    data: perfViews,
+                    borderColor: '#007bff', // blue
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    fill: false,
+                    tension: 0.3
+                },
+                {
+                    label: 'Likes',
+                    data: perfLikes,
+                    borderColor: '#ffc107', // yellow
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    fill: false,
+                    tension: 0.3
+                }
+            ]
+        }
+    });
+</script>
+{% endblock %} 

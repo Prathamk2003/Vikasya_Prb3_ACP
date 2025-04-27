@@ -1,0 +1,302 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AcademicCollab{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- User Information Section -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>My Profile</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.profile_pic) }}" 
+                     alt="Profile Picture" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                <h4>{{ current_user.username }}</h4>
+                <p class="text-muted">
+                    <i class="fas fa-graduation-cap me-1"></i>{{ current_user.user_type|title }} at {{ current_user.institution }}
+                </p>
+                <p>{{ current_user.bio or 'No bio added yet.' }}</p>
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i>Edit Profile
+                </a>
+            </div>
+            <div class="card-footer text-center text-muted">
+                Member since {{ current_user.date_joined.strftime('%B %Y') }}
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('create_project') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Project
+                    </a>
+                    <a href="{{ url_for('create_query') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-question-circle me-2"></i>Ask a Question
+                    </a>
+                    <a href="{{ url_for('create_resource') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-upload me-2"></i>Upload Resource
+                    </a>
+                    <a href="{{ url_for('analytics') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar me-2"></i>View Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Section -->
+    <div class="col-lg-8">
+        <!-- AI Recommendations -->
+        {% if recommended_resources %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3">Based on your activity, you might be interested in:</h6>
+                    <div class="row">
+                        {% for resource in recommended_resources %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card resource-card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ resource.title }}</h6>
+                                        <p class="card-text small">{{ resource.description|truncate(80) }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-primary">{{ resource.resource_type }}</span>
+                                            <a href="{{ url_for('view_resource', resource_id=resource.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- My Projects -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>My Projects</h5>
+                <a href="{{ url_for('create_project') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>New Project
+                </a>
+            </div>
+            <div class="card-body">
+                {% if projects %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Subject</th>
+                                    <th>Views</th>
+                                    <th>Likes</th>
+                                    <th>Collaborators</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in projects %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('view_project', project_id=project.id) }}">
+                                                {{ project.title }}
+                                            </a>
+                                        </td>
+                                        <td>{{ project.subject }}</td>
+                                        <td>{{ project.views }}</td>
+                                        <td>{{ project.likes }}</td>
+                                        <td>{{ project_collaborator_counts[project.id] }}</td>
+                                        <td>{{ project.date_posted.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">You haven't created any projects yet.</p>
+                    <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i>Create Your First Project
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- My Questions -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>My Questions</h5>
+                <a href="{{ url_for('create_query') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>New Question
+                </a>
+            </div>
+            <div class="card-body">
+                {% if queries %}
+                    <div class="list-group">
+                        {% for query in queries %}
+                            <a href="{{ url_for('view_query', query_id=query.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ query.title }}</h6>
+                                    <small>{{ query.date_posted.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small>
+                                        <i class="fas fa-eye me-1"></i>{{ query.views }} views &bull;
+                                        <i class="fas fa-comment me-1"></i>{{ query.answers|length }} answers
+                                    </small>
+                                    {% if query.solved %}
+                                        <span class="badge bg-success">Solved</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Unsolved</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">You haven't asked any questions yet.</p>
+                    <a href="{{ url_for('create_query') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i>Ask Your First Question
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- My Resources -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-book me-2"></i>My Resources</h5>
+                <a href="{{ url_for('create_resource') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>New Resource
+                </a>
+            </div>
+            <div class="card-body">
+                {% if resources %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Subject</th>
+                                    <th>Downloads</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resource in resources %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('view_resource', resource_id=resource.id) }}">
+                                                {{ resource.title }}
+                                            </a>
+                                        </td>
+                                        <td>{{ resource.resource_type }}</td>
+                                        <td>{{ resource.subject }}</td>
+                                        <td>{{ resource.downloads }}</td>
+                                        <td>{{ resource.date_posted.strftime('%Y-%m-%d') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">You haven't shared any resources yet.</p>
+                    <a href="{{ url_for('create_resource') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i>Share Your First Resource
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Public Projects by Other Users -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-globe me-2"></i>Public Projects by Others</h5>
+            </div>
+            <div class="card-body">
+                {% if public_projects %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Author</th>
+                                    <th>Subject</th>
+                                    <th>Collaborators</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in public_projects %}
+                                <tr>
+                                    <td><a href="{{ url_for('view_project', project_id=project.id) }}">{{ project.title }}</a></td>
+                                    <td>{{ project.author.username }}</td>
+                                    <td>{{ project.subject }}</td>
+                                    <td>{{ public_project_collaborator_counts[project.id] }}</td>
+                                    <td>{{ project.date_posted.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% set collaborators = project.collaborators|from_json if project.collaborators else [] %}
+                                        {% if current_user.id not in collaborators %}
+                                        <form method="POST" action="{{ url_for('join_project', project_id=project.id) }}" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-success">Join as Collaborator</button>
+                                        </form>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Already a collaborator</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No public projects from other users available at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section for project owners to handle join requests -->
+        {% if pending_join_requests %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Pending Collaborator Requests</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                    {% for req in pending_join_requests %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ req.user_id }} wants to join project ID {{ req.project_id }} (customize to show username/project title)</span>
+                            <span>
+                                <form method="POST" action="{{ url_for('handle_join_request', request_id=req.id, action='accept') }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('handle_join_request', request_id=req.id, action='decline') }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger">Decline</button>
+                                </form>
+                            </span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

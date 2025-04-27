@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Educator Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="register-container">
+        <h2>Educator Registration</h2>
+        <form method="POST" action="{{ url_for('register_educator') }}">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="institution">Institution:</label>
+            <input type="text" id="institution" name="institution" required>
+
+            <label for="domain">Domain/Field of Expertise:</label>
+            <input type="text" id="domain" name="domain" required>
+
+            <label for="skills">Skills (comma-separated):</label>
+            <input type="text" id="skills" name="skills" required>
+
+            <label for="designation">Designation:</label>
+            <input type="text" id="designation" name="designation" required>
+
+            <button type="submit">Register as Educator</button>
+        </form>
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+        <p>Want to register as a student? <a href="{{ url_for('register') }}">Student Registration</a>.</p>
+    </div>
+</body>
+</html> 

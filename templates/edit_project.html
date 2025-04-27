@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Project - AcademicCollab{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Project</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Project Title</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ project.title }}" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="project_type" class="form-label">Project Type</label>
+                            <select class="form-select" id="project_type" name="project_type" required>
+                                <option value="">Select a type...</option>
+                                {% for type in ["Research Paper", "Case Study", "Experiment", "Software Project", "Art Project", "Engineering Project", "Literature Review", "Other"] %}
+                                    <option value="{{ type }}" {% if project.project_type == type %}selected{% endif %}>{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subject" class="form-label">Subject Area</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Select a subject...</option>
+                                {% for subj in ["Computer Science", "Mathematics", "Physics", "Chemistry", "Biology", "Engineering", "Medicine", "Psychology", "Sociology", "Economics", "Business", "Literature", "History", "Philosophy", "Art", "Music", "Other"] %}
+                                    <option value="{{ subj }}" {% if project.subject == subj %}selected{% endif %}>{{ subj }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Short Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ project.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Project Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required>{{ project.content }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="files" class="form-label">Project Files (Optional)</label>
+                        <input class="form-control" type="file" id="files" name="files[]" multiple>
+                        <div class="form-text">Upload any relevant documents, code, images, or other files related to your project.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="scope" class="form-label">Project Scope</label>
+                        <select class="form-select" id="scope" name="scope" required onchange="toggleCollaborators()">
+                            <option value="public" {% if project.scope == 'public' %}selected{% endif %}>Public</option>
+                            <option value="private" {% if project.scope == 'private' %}selected{% endif %}>Private</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="collaborators-section" style="display:none;">
+                        <label for="collaborators" class="form-label">Select Collaborators</label>
+                        <select class="form-select" id="collaborators" name="collaborators" multiple>
+                            {% set selected_collaborators = project.collaborators|from_json if project.collaborators else [] %}
+                            {% for user in users if user.id != current_user.id %}
+                                <option value="{{ user.id }}" {% if user.id in selected_collaborators %}selected{% endif %}>{{ user.username }} ({{ user.user_type|title }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Hold Ctrl (Windows) or Command (Mac) to select multiple collaborators.</div>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-info" id="recommend-btn">Recommend Teachers</button>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Update Project</button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleCollaborators();
+    });
+    function toggleCollaborators() {
+        var scope = document.getElementById('scope').value;
+        document.getElementById('collaborators-section').style.display = (scope === 'private') ? 'block' : 'none';
+    }
+</script>
+{% endblock %} 

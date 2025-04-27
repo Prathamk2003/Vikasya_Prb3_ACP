@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ resource.title }} - AcademicCollab{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ resource.title }}</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Type:</strong> {{ resource.resource_type }}</p>
+                <p><strong>Subject:</strong> {{ resource.subject }}</p>
+                <p><strong>Description:</strong> {{ resource.description }}</p>
+                {% if resource.filename %}
+                    <p><strong>File:</strong> <a href="{{ url_for('static', filename='uploads/resources/' ~ resource.filename) }}" download>{{ resource.filename }}</a></p>
+                {% endif %}
+                {% if resource.external_link %}
+                    <p><strong>External Link:</strong> <a href="{{ resource.external_link }}" target="_blank">{{ resource.external_link }}</a></p>
+                {% endif %}
+                <p><strong>Uploaded by:</strong> {{ resource.uploader.username }}</p>
+                <p><strong>Posted on:</strong> {{ resource.date_posted.strftime('%B %d, %Y') }}</p>
+                <hr>
+                <h5>Ratings</h5>
+                {% if ratings %}
+                    <ul class="list-group mb-3">
+                        {% for rating in ratings %}
+                        <li class="list-group-item">
+                            <span>Rating: {{ rating.rating }} / 5</span><br>
+                            <span>{{ rating.review }}</span><br>
+                            <small>By {{ rating.author.username }} on {{ rating.date_posted.strftime('%B %d, %Y') }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <p><strong>Average Rating:</strong> {{ avg_rating|round(2) }} / 5</p>
+                {% else %}
+                    <p>No ratings yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

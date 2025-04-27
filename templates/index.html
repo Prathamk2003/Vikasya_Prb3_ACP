@@ -1,0 +1,166 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+
+{% block title %}AcademicCollab - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Hero Section -->
+    <div class="col-12 mb-4">
+        <div class="bg-primary text-white p-5 rounded-3 text-center">
+            <h1 class="display-4">Welcome to AcademicCollab</h1>
+            <p class="lead">Connect, Collaborate, and Create with the Academic Community</p>
+            <hr class="my-4">
+            <p>Share your projects, ask questions, and discover educational resources.</p>
+            {% if not current_user.is_authenticated %}
+                <a class="btn btn-light btn-lg" href="{{ url_for('register') }}" role="button">Join Now</a>
+            {% else %}
+                <a class="btn btn-light btn-lg" href="{{ url_for('create_project') }}" role="button">Create a Project</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Features Section -->
+    <div class="col-12 mb-5">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <a href="{% if not current_user.is_authenticated %}{{ url_for('login', next=url_for('projects')) }}{% else %}{{ url_for('projects') }}{% endif %}" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-project-diagram fa-3x text-primary mb-3"></i>
+                            <h3 class="card-title">Project Collaboration</h3>
+                            <p class="card-text">Share your academic projects, get feedback, and collaborate with peers.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4 mb-4">
+                <a href="{% if not current_user.is_authenticated %}{{ url_for('login', next=url_for('queries')) }}{% else %}{{ url_for('queries') }}{% endif %}" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-question-circle fa-3x text-primary mb-3"></i>
+                            <h3 class="card-title">Q&A Forum</h3>
+                            <p class="card-text">Ask questions, provide answers, and learn from the academic community.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4 mb-4">
+                <a href="{% if not current_user.is_authenticated %}{{ url_for('login', next=url_for('resources')) }}{% else %}{{ url_for('resources') }}{% endif %}" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                            <h3 class="card-title">Resource Library</h3>
+                            <p class="card-text">Access and share educational resources, papers, and study materials.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Projects Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Recent Projects</h5>
+                <a href="{{ url_for('projects') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if projects %}
+                    <div class="list-group">
+                        {% for project in projects %}
+                            <a href="{{ url_for('view_project', project_id=project.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ project.title }}</h5>
+                                    <small>{{ project.date_posted.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                <p class="mb-1">{{ project.description|truncate(100) }}</p>
+                                <small>
+                                    <i class="fas fa-user me-1"></i>{{ project.author.username }} &bull;
+                                    <i class="fas fa-eye me-1"></i>{{ project.views }} views &bull;
+                                    <i class="fas fa-heart me-1"></i>{{ project.likes }} likes
+                                </small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No projects yet. Be the first to share your work!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Queries Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Recent Questions</h5>
+                <a href="{{ url_for('queries') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if queries %}
+                    <div class="list-group">
+                        {% for query in queries %}
+                            <a href="{{ url_for('view_query', query_id=query.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ query.title }}</h5>
+                                    <small>{{ query.date_posted.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                <p class="mb-1">{{ query.content|truncate(100) }}</p>
+                                <small>
+                                    <i class="fas fa-user me-1"></i>{{ query.author.username }} &bull;
+                                    <i class="fas fa-eye me-1"></i>{{ query.views }} views &bull;
+                                    <i class="fas fa-comment me-1"></i>{{ query.answers|length }} answers
+                                    {% if query.solved %}
+                                        &bull; <span class="badge bg-success">Solved</span>
+                                    {% endif %}
+                                </small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No questions yet. Be the first to ask!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular Resources Section -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-book me-2"></i>Popular Resources</h5>
+                <a href="{{ url_for('resources') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if resources %}
+                    <div class="row">
+                        {% for resource in resources %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card resource-card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ resource.title }}</h5>
+                                        <p class="card-text">{{ resource.description|truncate(80) }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-primary">{{ resource.resource_type }}</span>
+                                            <small class="text-muted">
+                                                <i class="fas fa-download me-1"></i>{{ resource.downloads }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <a href="{{ url_for('view_resource', resource_id=resource.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No resources yet. Be the first to share!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,235 @@
+<!-- templates/create_project.html -->
+{% extends "base.html" %}
+
+{% block title %}Create Project - AcademicCollab{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Create New Project</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_project') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Project Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="project_type" class="form-label">Project Type</label>
+                            <select class="form-select" id="project_type" name="project_type" required>
+                                <option value="">Select a type...</option>
+                                <option value="Research Paper">Research Paper</option>
+                                <option value="Case Study">Case Study</option>
+                                <option value="Experiment">Experiment</option>
+                                <option value="Software Project">Software Project</option>
+                                <option value="Art Project">Art Project</option>
+                                <option value="Engineering Project">Engineering Project</option>
+                                <option value="Literature Review">Literature Review</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subject" class="form-label">Subject Area</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Select a subject...</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Medicine">Medicine</option>
+                                <option value="Psychology">Psychology</option>
+                                <option value="Sociology">Sociology</option>
+                                <option value="Economics">Economics</option>
+                                <option value="Business">Business</option>
+                                <option value="Literature">Literature</option>
+                                <option value="History">History</option>
+                                <option value="Philosophy">Philosophy</option>
+                                <option value="Art">Art</option>
+                                <option value="Music">Music</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Short Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required
+                                  placeholder="Provide a brief summary of your project (max 200 words)"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Project Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required
+                                  placeholder="Describe your project in detail. Include methodology, objectives, expected outcomes, etc."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="files" class="form-label">Project Files (Optional)</label>
+                        <input class="form-control" type="file" id="files" name="files[]" multiple>
+                        <div class="form-text">Upload any relevant documents, code, images, or other files related to your project.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scope" class="form-label">Project Scope</label>
+                        <select class="form-select" id="scope" name="scope" required onchange="toggleCollaborators()">
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="collaborators-section" style="display:none;">
+                        <label for="collaborators" class="form-label">Select Collaborators</label>
+                        <select class="form-select" id="collaborators" name="collaborators" multiple>
+                            {% for user in users if user.id != current_user.id %}
+                                <option value="{{ user.id }}">{{ user.username }} ({{ user.user_type|title }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Hold Ctrl (Windows) or Command (Mac) to select multiple collaborators.</div>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-info" id="recommend-btn">Recommend Teachers</button>
+                    </div>
+                    <div id="recommendation-results" class="mb-3"></div>
+                    <!-- Invite Students Modal -->
+                    <div class="modal fade" id="inviteStudentsModal" tabindex="-1" aria-labelledby="inviteStudentsModalLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="inviteStudentsModalLabel">Invite Students as Collaborators</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <input type="text" id="student-search" class="form-control mb-3" placeholder="Search students by name or institution...">
+                            <div style="max-height: 300px; overflow-y: auto;">
+                              <ul class="list-group" id="students-list">
+                                {% for user in users if user.user_type == 'student' %}
+                                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><strong>{{ user.username }}</strong> ({{ user.institution or 'N/A' }})</span>
+                                    <button type="button" class="btn btn-sm btn-success select-student-btn" data-id="{{ user.id }}" data-name="{{ user.username }}">Add</button>
+                                  </li>
+                                {% endfor %}
+                              </ul>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Create Project</button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Enable rich text editor for project content
+    document.addEventListener('DOMContentLoaded', function() {
+        // This would typically be replaced with a proper rich text editor initialization
+        // like TinyMCE, CKEditor, etc.
+        console.log('Rich text editor would be initialized here');
+        toggleCollaborators();
+        document.getElementById('recommend-btn').addEventListener('click', function() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const subject = document.getElementById('subject').value;
+            fetch("/api/recommend_teachers", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({title, description, subject})
+            })
+            .then(response => response.json())
+            .then(data => {
+                let html = '<div class="card"><div class="card-header bg-info text-white"><strong>Recommended Teachers</strong></div><ul class="list-group list-group-flush">';
+                if (data.length === 0) {
+                    html += '<li class="list-group-item text-muted">No suitable teachers found.</li>';
+                } else {
+                    data.forEach(teacher => {
+                        html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><strong>${teacher.username}</strong> (${teacher.designation || ''}, ${teacher.institution || ''})<br>
+                            <small>Domain: ${teacher.domain || '-'} | Skills: ${teacher.skills || '-'}</small></span>
+                            <button type="button" class="btn btn-sm btn-success add-collab-btn" data-id="${teacher.id}" data-name="${teacher.username}">Add as Collaborator</button>
+                        </li>`;
+                    });
+                }
+                html += '</ul></div>';
+                document.getElementById('recommendation-results').innerHTML = html;
+                // Add event listeners to add-collab buttons
+                document.querySelectorAll('.add-collab-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const collabSelect = document.getElementById('collaborators');
+                        if (collabSelect) {
+                            const option = Array.from(collabSelect.options).find(opt => opt.value == this.dataset.id);
+                            if (option) {
+                                option.selected = true;
+                                collabSelect.scrollIntoView({behavior: 'smooth'});
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    });
+
+    function toggleCollaborators() {
+        var scope = document.getElementById('scope').value;
+        document.getElementById('collaborators-section').style.display = (scope === 'private') ? 'block' : 'none';
+    }
+
+    {% if current_user.user_type == 'educator' %}
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set project scope to public and disable selector
+        document.getElementById('scope').value = 'public';
+        document.getElementById('scope').setAttribute('disabled', 'disabled');
+        // Hide Recommend Teachers button and show Invite Students
+        document.getElementById('recommend-btn').style.display = 'none';
+        let inviteBtn = document.createElement('button');
+        inviteBtn.type = 'button';
+        inviteBtn.className = 'btn btn-outline-success';
+        inviteBtn.id = 'invite-students-btn';
+        inviteBtn.innerText = 'Invite Students';
+        document.getElementById('recommendation-results').parentNode.insertBefore(inviteBtn, document.getElementById('recommendation-results'));
+        // Show modal on click
+        inviteBtn.addEventListener('click', function() {
+            var modal = new bootstrap.Modal(document.getElementById('inviteStudentsModal'));
+            modal.show();
+        });
+        // Student search filter
+        document.getElementById('student-search').addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            document.querySelectorAll('#students-list li').forEach(function(li) {
+                const name = li.querySelector('strong').innerText.toLowerCase();
+                const inst = li.innerText.toLowerCase();
+                li.style.display = (name.includes(query) || inst.includes(query)) ? '' : 'none';
+            });
+        });
+        // Add student as collaborator
+        document.querySelectorAll('.select-student-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const collabSelect = document.getElementById('collaborators');
+                if (collabSelect) {
+                    const option = Array.from(collabSelect.options).find(opt => opt.value == this.dataset.id);
+                    if (option) {
+                        option.selected = true;
+                        collabSelect.scrollIntoView({behavior: 'smooth'});
+                    }
+                }
+            });
+        });
+    });
+    {% endif %}
+</script>
+{% endblock %}

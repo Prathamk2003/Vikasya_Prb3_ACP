@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - AcademicCollab{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Profile</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="institution" class="form-label">Institution</label>
+                        <input type="text" class="form-control" id="institution" name="institution" value="{{ user.institution }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="3">{{ user.bio }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile_pic" class="form-label">Profile Picture</label>
+                        <input class="form-control" type="file" id="profile_pic" name="profile_pic">
+                        {% if user.profile_pic %}
+                            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ user.profile_pic) }}" alt="Profile Picture" class="profile-pic mt-2">
+                        {% endif %}
+                    </div>
+                    {% if user.user_type == 'educator' %}
+                    <hr>
+                    <h5>Educator Details</h5>
+                    <div class="mb-3">
+                        <label for="domain" class="form-label">Domain/Field of Expertise</label>
+                        <input type="text" class="form-control" id="domain" name="domain" value="{{ user.domain }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="skills" class="form-label">Skills (comma-separated)</label>
+                        <input type="text" class="form-control" id="skills" name="skills" value="{{ user.skills }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="designation" class="form-label">Designation</label>
+                        <input type="text" class="form-control" id="designation" name="designation" value="{{ user.designation }}">
+                    </div>
+                    {% endif %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <a href="{{ url_for('profile', username=user.username) }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

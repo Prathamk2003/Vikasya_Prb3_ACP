@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Resources - AcademicCollab{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Educational Resources</h2>
+    <div class="card">
+        <div class="card-body">
+            {% if resources %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Subject</th>
+                            <th>Downloads</th>
+                            <th>Uploader</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resource in resources %}
+                        <tr>
+                            <td><a href="{{ url_for('view_resource', resource_id=resource.id) }}">{{ resource.title }}</a></td>
+                            <td>{{ resource.resource_type }}</td>
+                            <td>{{ resource.subject }}</td>
+                            <td>{{ resource.downloads }}</td>
+                            <td>{{ resource.uploader.username }}</td>
+                            <td>{{ resource.date_posted.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <a href="{{ url_for('view_resource', resource_id=resource.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted">No resources found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 
