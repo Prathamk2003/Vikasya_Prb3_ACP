@@ -74,4 +74,6 @@ A full-featured academic collaboration platform for students and educators to sh
 - For production, always use a secure secret key and a production-ready database.
 
 ## License
-MIT 
+BSD 3-Clause License
+
+Copyright (c) 2025, PrathamK
